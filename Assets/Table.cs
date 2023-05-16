@@ -15,6 +15,7 @@ public class Table : MonoBehaviour
     GameObject[,] movingBlock;
     bool verticalNeutral = true;
     bool horizontalNeutral = true;
+    bool softDrop = false;
     bool doRotation = false;
     bool gameIsOn = false;
     bool left;
@@ -24,19 +25,21 @@ public class Table : MonoBehaviour
     int point = 0; //TODO show points for player
     int lines = 0;
     public UnityEngine.UI.Text startText;
-    
+    public UnityEngine.UI.Text score;
     
     /// <summary>
     /// Begins game
     /// </summary>
     void beginGame()
     {
+        point = 0;
         delayBetweenMoves = 30;
         startText.gameObject.SetActive(false);
         gameIsOn = true;
         table = new GameObject[tableWidth, tableHeight];
         movingBlock = new GameObject[tableWidth, tableHeight];
-        newBlock(Random.Range(0, 5));
+        newBlock(Random.Range(0, 7));
+        score.text = ""+point;
 
     }
     /// <summary>
@@ -71,44 +74,49 @@ public class Table : MonoBehaviour
     /// </summary>
     /// <param name="whatBlock"></param>
     void newBlock(int whatBlock) {
-
+      
         switch (whatBlock) {
             case 0: 
-            movingBlock[5, 19] = showBlock(5, 19, Color.blue);
-            movingBlock[4, 19] = showBlock(4,19, Color.blue);
-            movingBlock[6, 19] = showBlock(6, 19, Color.blue);
-                movingBlock[4, 18] = showBlock(4, 18, Color.blue);
+            movingBlock[5, 23] = showBlock(5, 23, Color.blue);
+            movingBlock[4, 23] = showBlock(4, 23, Color.blue);
+            movingBlock[6, 23] = showBlock(6, 23, Color.blue);
+                movingBlock[4, 22] = showBlock(4, 22, Color.blue);
                     break;
             case 1:
-        movingBlock[5, 23] = showBlock(5, 23, Color.red);
-        movingBlock[4, 23] = showBlock(4, 23, Color.red);
-        movingBlock[6, 23] = showBlock(6, 23, Color.red);
-        movingBlock[6, 22] = showBlock(6, 22, Color.red);
+        movingBlock[5, 23] = showBlock(5, 23, new Color(1f,0.8f,0f));
+        movingBlock[4, 23] = showBlock(4, 23, new Color(1f, 0.8f, 0f));
+        movingBlock[6, 23] = showBlock(6, 23, new Color(1f, 0.8f, 0f));
+        movingBlock[6, 22] = showBlock(6, 22, new Color(1f, 0.8f, 0f));
                 break;
             case 2:
-                movingBlock[5, 23] = showBlock(5, 23, Color.yellow);
-                movingBlock[4, 23] = showBlock(4, 23, Color.yellow);
-                movingBlock[6, 23] = showBlock(6, 23, Color.yellow);
-                movingBlock[7, 23] = showBlock(7, 23, Color.yellow);
+                movingBlock[5, 23] = showBlock(5, 23, Color.cyan);
+                movingBlock[4, 23] = showBlock(4, 23, Color.cyan);
+                movingBlock[6, 23] = showBlock(6, 23, Color.cyan);
+                movingBlock[7, 23] = showBlock(7, 23, Color.cyan);
                 break;
             case 3:
-                movingBlock[5, 23] = showBlock(5, 23, Color.green);
-                movingBlock[4, 23] = showBlock(4, 23, Color.green);
-                movingBlock[6, 23] = showBlock(6, 23, Color.green);
-                movingBlock[5, 22] = showBlock(5, 22, Color.green);
-                break;
-            case 4:
-                movingBlock[5, 23] = showBlock(5, 23,Color.cyan);
-                movingBlock[4, 23] = showBlock(4, 23, Color.cyan);
-                movingBlock[5, 22] = showBlock(5, 22, Color.cyan);
-                movingBlock[4, 22] = showBlock(4, 22, Color.cyan);
-                break;
-            case 5:
                 movingBlock[5, 23] = showBlock(5, 23, Color.magenta);
                 movingBlock[4, 23] = showBlock(4, 23, Color.magenta);
+                movingBlock[6, 23] = showBlock(6, 23, Color.magenta);
                 movingBlock[5, 22] = showBlock(5, 22, Color.magenta);
-                movingBlock[4, 22] = showBlock(4, 22, Color.magenta);
-                movingBlock[6, 23] = showBlock(4, 22, Color.magenta);
+                break;
+            case 4:
+                movingBlock[5, 23] = showBlock(5, 23,Color.yellow);
+                movingBlock[4, 23] = showBlock(4, 23, Color.yellow);
+                movingBlock[5, 22] = showBlock(5, 22, Color.yellow);
+                movingBlock[4, 22] = showBlock(4, 22, Color.yellow);
+                break;
+            case 5:
+                movingBlock[5, 23] = showBlock(5, 23, Color.red);
+                movingBlock[4, 23] = showBlock(4, 23, Color.red);
+                movingBlock[5, 22] = showBlock(5, 22, Color.red);
+                movingBlock[6, 22] = showBlock(4, 22, Color.red);
+                break;
+            case 6:
+                movingBlock[5, 22] = showBlock(5, 22, Color.green);
+                movingBlock[4, 22] = showBlock(4, 22, Color.green);
+                movingBlock[5, 23] = showBlock(5, 23, Color.green);
+                movingBlock[6, 23] = showBlock(6, 23, Color.green);
                 break;
         }
     }
@@ -227,12 +235,14 @@ public class Table : MonoBehaviour
             Debug.Log("something is under");
             //add moving block to table
             addBlockToTable();
-            if (CheckForGameOver()) {
+            if (CheckForGameOver())
+            {
                 Debug.Log("gameOver");
                 GameOver();
             }
+            else { newBlock(Random.Range(0, 7)); }
             //make new block to move
-            newBlock(Random.Range(0,6));
+ 
         }
         else {
             Debug.Log("nothing under");
@@ -289,53 +299,44 @@ public class Table : MonoBehaviour
     /// Rotates moving block if there is room for it. 
     /// </summary>
     void rotate() {
+        Debug.Log("trying to rotate");
         int lengthOfBlockX = 0;
         int lengthOfBlockY = 0;
         int minx = tableWidth;
         int miny = tableHeight;
+        int maxx = 0;
+        int maxy = 0;
         GameObject[,] rotatedBlock = new GameObject[tableWidth, tableHeight];
         bool fits = true;
         for (int X = 0; X < movingBlock.GetLength(0); X++)
         {
-
-            int currentYLength = 0;
             for (int Y = 0; Y < movingBlock.GetLength(1); Y++)
             {
 
                 if (movingBlock[X, Y] != null)
                 {
                     if (minx > X) { minx = X; }
-
-                    currentYLength++;
-                    if (currentYLength > lengthOfBlockY) { lengthOfBlockY = currentYLength; }
-                }
-            }
-
-        }
-        for (int Y = 0; Y < movingBlock.GetLength(1); Y++)
-        {
-
-            int currentXLength = 0;
-            for (int X = 0; X < movingBlock.GetLength(0); X++)
-            {
-
-                if (movingBlock[X, Y] != null)
-                {
+                    if (X > maxx) { maxx = X; }
                     if (miny > Y) { miny = Y; }
-                    currentXLength++;
-                    if (currentXLength > lengthOfBlockX) { lengthOfBlockX = currentXLength; }
+                    if (Y > maxy) { maxy = Y; }
+
                 }
             }
 
         }
+
+        lengthOfBlockX = maxx - minx + 1;
+        lengthOfBlockY = maxy - miny + 1;
+        //120   040     000     
+        //034-->230-->  430    
+        //000   100     021
         for (int Y = miny; Y < miny + lengthOfBlockY; Y++) {
             for (int X = minx; X < minx + lengthOfBlockX; X++) {
-                //Debug.Log("x"+X+" y"+Y);
-                if ((miny + lengthOfBlockX - (X - minx + 1)) >= tableHeight || (miny + lengthOfBlockX - (X - minx + 1)) < 0) { fits = false; break; }
+                if ((miny + lengthOfBlockX - (X - minx + 1)) >= tableHeight || (miny + lengthOfBlockX - (X - minx+1 )) < 0) { fits = false; break; }
                 if ((minx + (Y - miny)) >= tableWidth || (minx + (Y - miny)) < 0) { fits = false; break; }
-                rotatedBlock[minx + (Y - miny), miny + lengthOfBlockX - (X - minx + 1)] = movingBlock[X, Y];
+                rotatedBlock[minx + (Y - miny), miny + lengthOfBlockX - (X - minx +1)] = movingBlock[X, Y];
             }
-
+            if (!fits) { break; }
         }
         if (!checkIfOverlap(rotatedBlock) && fits)
         {
@@ -391,6 +392,7 @@ public class Table : MonoBehaviour
             case 3:point += 500;break;
             case 4:point += 800;break;
         }
+        score.text = "" + point;
         //Debug.Log(addedBlocks + " blocks added");
 
     }
@@ -426,6 +428,25 @@ public class Table : MonoBehaviour
             }
 
         }
+          for (int X = 0; X < movingBlock.GetLength(0); X++)
+          {
+
+              for (int Y = 0; Y < movingBlock.GetLength(1); Y++)
+              {
+
+                  if (movingBlock[X, Y] != null)
+                  {
+                      GameObject.Destroy(table[X, Y]);
+                  }
+              }
+
+          }
+          GameObject[] leftover = GameObject.FindGameObjectsWithTag("block");
+          for (int i = leftover.Length - 1; i >= 0; i--) {
+              GameObject.Destroy(leftover[i]);
+              Debug.Log("leftover destroyed");
+          }
+
         gameIsOn = false;
         startText.gameObject.SetActive(true);
     }
@@ -436,13 +457,14 @@ public class Table : MonoBehaviour
         }
         
         if (!gameIsOn) {return; }
-        if (doRotation) { rotate();doRotation = false; }
-
-            manouver();
-    
-        if (currentTicksBetweenMoves >= delayBetweenMoves || Input.GetButton("Jump")) 
+        if (doRotation) { rotate(); doRotation = false; }
+        else
         {
-
+            manouver();
+        }
+        if (currentTicksBetweenMoves >= delayBetweenMoves || softDrop) 
+        {
+            softDrop = false;
                 descend();
 
             currentTicksBetweenMoves = 0;
@@ -454,6 +476,7 @@ public class Table : MonoBehaviour
     {
         if (!gameIsOn)
         {
+            if (Input.GetButton("Cancel")) { Application.Quit(); }
             if (Input.GetAxisRaw("Vertical") != 0 || Input.GetAxisRaw("Horizontal") != 0)
             {
                 beginGame();
@@ -461,16 +484,18 @@ public class Table : MonoBehaviour
         }
         else
         {
-            if (Input.GetAxisRaw("Horizontal") != 0 && horizontalNeutral)
+            if (Input.GetButton("Jump")) { softDrop = true; } 
+            if (Input.GetAxisRaw("Horizontal") != 0 && horizontalNeutral && !softDrop)
             {
-                if (Input.GetAxisRaw("Horizontal") > 0) { right = true;  } else { left = true; }
+                if (Input.GetAxisRaw("Horizontal") > 0 && !doRotation && !softDrop) { right = true;  } else { left = true; }
                 horizontalNeutral = false;
             }
             else
             {
-                if (Input.GetAxisRaw("Horizontal") == 0) { horizontalNeutral = true; }
+                if (Input.GetAxisRaw("Horizontal") == 0 && !softDrop ) { horizontalNeutral = true; }
 
-                if (Input.GetAxisRaw("Vertical") != 0 && verticalNeutral) { doRotation = true; verticalNeutral = false; } else { if (Input.GetAxisRaw("Vertical") == 0) { verticalNeutral = true; } }
+                if (Input.GetAxisRaw("Vertical") != 0 && verticalNeutral && !left && !right) { doRotation = true; verticalNeutral = false; } 
+                else { if (Input.GetAxisRaw("Vertical") == 0 && !doRotation) { verticalNeutral = true; } }
             }
         }
     }
